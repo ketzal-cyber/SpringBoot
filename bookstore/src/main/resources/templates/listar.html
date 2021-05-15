@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8" />
+<title th:text=${titulo}></title>
+</head>
+<body>
+	<h1 th:text="${titulo}"></h1>
+	
+	<div th:if="${users.size() == 0}">No hay usuarios en la lista</div>
+	
+	<!--
+	String nombbre, String apeP, String apeM, String dNI, char genero, String domicilio,
+			String telefono, String email, Date fechaNacimiento, String usuario,String logros,Date fechaIngreso
+			--
+			  int codUser, String usuario, String logros, Date fechaIngreso
+	 -->
+	<table th:if="${users.size() > 0}">
+		<thead>
+			<tr>
+				<th>Codigo User</th>
+				<th>Usuario</th>
+				<th>Logros</th>
+				<th>Fecha Ingreso</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr th:each="usuario: ${users}">
+				<td th:text="${usuario.codUser}"></td>
+				<td th:text="${usuario.usuario}"></td>
+				<td th:text="${usuario.logros}"></td>
+				<td th:text="${usuario.fechaIngreso}"></td>
+			</tr>
+		</tbody>
+	</table>
+
+</body>
+</html>
