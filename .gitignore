@@ -1,4 +1,4 @@
-/.metadata/
+/ .metadata/
 
 HELP.md
 target/
@@ -18,6 +18,10 @@ bookstore/target
 bookstore/.settings
 bookstore/.mvn
 .metadata
+apimongo/target
+apimongo/.settings
+apimongo/.mvn
+apimongo.metadata
 
 
 ### NetBeans ###
