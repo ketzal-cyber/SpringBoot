@@ -22,7 +22,9 @@ apimongo/target
 apimongo/.settings
 apimongo/.mvn
 apimongo.metadata
-
+test_redis/target
+test_redis/.settings
+test_redis/.mvn
 
 ### NetBeans ###
 /nbproject/private/
@@ -33,3 +35,12 @@ apimongo.metadata
 build/
 !**/src/main/**/build/
 !**/src/test/**/build/
+SimpleConfigSSL/.gitignore
+SimpleConfigSSL/.mvn/
+SimpleConfigSSL/mvnw/
+SimpleConfigSSL/mvnw.cmd
+SimpleConfigSSL/.gitignore
+SimpleConfigSSL/mvnw
+test_Redis/mvnw
+test_Redis/mvnw.cmd
+test_Redis/.gitignore
