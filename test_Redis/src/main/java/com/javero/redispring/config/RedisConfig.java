@@ -20,7 +20,7 @@ public class RedisConfig {
 	@Bean
 	RedisStandaloneConfiguration redisconfig() {
 		RedisStandaloneConfiguration redisConfig = new RedisStandaloneConfiguration();
-		redisConfig.setHostName("127.0.0.1");
+		redisConfig.setHostName("172.30.236.108");
 		redisConfig.setPort(6379);
 		//redisConfig.setPassword("javero1222");
 		return redisConfig;

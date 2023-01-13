@@ -7,6 +7,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import com.javero.redispring.entity.Music;
@@ -18,6 +19,11 @@ public class MusicServiceImpl implements MusikService{
 
 	@Autowired
 	private MusicaRepository musicRepo;
+	
+	@Autowired
+	private RedisTemplate redisTemplate;
+	
+	private static final String CACHING = "cache-music";
 
 	@Override
 	public Set<Music> findAll() {
@@ -46,6 +52,7 @@ public class MusicServiceImpl implements MusikService{
 
 	@Override
 	public Music addMusic(Music music) {
+		redisTemplate.opsForValue().set(CACHING, music.toString());
 		return musicRepo.save(music);
 	}
 
