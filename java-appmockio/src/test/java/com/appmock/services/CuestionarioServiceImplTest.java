@@ -3,7 +3,11 @@ package com.appmock.services;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
@@ -17,6 +21,7 @@ import org.mockito.Mockito;
 
 import com.appmock.dao.CuestionarioDAO;
 import com.appmock.dao.CuestionarioDaoImpl;
+import com.appmock.dao.CuestionarioPreguntaDAO;
 import com.appmock.models.Cuestionario;
 
 /* -> *****-*
@@ -26,11 +31,13 @@ public class CuestionarioServiceImplTest {
 	
 	CuestionarioDAO cuestionarioDao;
 	CuestionarioService cuestionarioService;
+	CuestionarioPreguntaDAO cuestionarioPreguntaDao;
 	
 	@BeforeEach
 	void setUp() {
 		cuestionarioDao = Mockito.mock(CuestionarioDAO.class);
-		cuestionarioService = new CuestionarioServiceImp(cuestionarioDao);
+		cuestionarioPreguntaDao = mock(CuestionarioPreguntaDAO.class);
+		cuestionarioService = new CuestionarioServiceImp(cuestionarioDao,cuestionarioPreguntaDao);
 	}
 	
 	@Test
@@ -39,11 +46,12 @@ public class CuestionarioServiceImplTest {
 		// no puedo hacer un Mock de un metodo privado o static ni final
 //		CuestionarioDAO cuestionarioDao = Mockito.mock(CuestionarioDAO.class);   // mover a atriutos de calse para reutilizar
 //		CuestionarioService cuestionarioService = new CuestionarioServiceImp(cuestionarioDao);  	// iniciarlos en @BeoreEach
-		List<Cuestionario> datos = Arrays.asList(new Cuestionario(5L,"Programación"),
-				new Cuestionario(6L, "Analisis Sistemas"),
-				new Cuestionario(7L, "Matematicas Discretas"));
 		
-		when(cuestionarioDao.findAll()).thenReturn(datos);
+//		List<Cuestionario> datos = Arrays.asList(new Cuestionario(5L,"Programación"),  // remplazado por la clase de Datos
+//				new Cuestionario(6L, "Analisis Sistemas"),
+//				new Cuestionario(7L, "Matematicas Discretas"));
+		
+		when(cuestionarioDao.findAll()).thenReturn(Datos.EXAMENES);
 		
 		//Cuestionario cuestionario = cuestionarioService.findCuestionarioPorNombre("Programación");
 //		assertNotNull(cuestionario);
@@ -56,7 +64,6 @@ public class CuestionarioServiceImplTest {
 		assertEquals("Programación", cuestionario.get().getNombre());
 	}
 	
-	
 	@Test
 	void findCuestionarioPorNombreListaVacia() {
 		//
@@ -67,6 +74,39 @@ public class CuestionarioServiceImplTest {
 		Optional<Cuestionario> cuestionario = cuestionarioService.findCuestionarioPorNombre("Programación");
 		assertFalse(cuestionario.isPresent());
 		
+	}
+	
+	@Test
+	void testPreguntaCuestionario() {
+		when(cuestionarioDao.findAll()).thenReturn(Datos.EXAMENES);
+		when(cuestionarioPreguntaDao.findPreguntasPorCuestionarioId(anyLong())).thenReturn(Datos.PREGUNTAS);
+		
+		Cuestionario cuestionario = cuestionarioService.findCuestionarioPorNombreConPreguntas("Programación");
+		
+		assertEquals(5, cuestionario.getPreguntas().size());
+	}
+	
+	@Test
+	void testPreguntaCuestionarioVerificar() {
+		when(cuestionarioDao.findAll()).thenReturn(Datos.EXAMENES);
+		when(cuestionarioPreguntaDao.findPreguntasPorCuestionarioId(anyLong())).thenReturn(Datos.PREGUNTAS);
+		
+		Cuestionario cuestionario = cuestionarioService.findCuestionarioPorNombreConPreguntas("Programación");
+		
+		assertEquals(5, cuestionario.getPreguntas().size());
+		verify(cuestionarioDao).findAll();
+		verify(cuestionarioPreguntaDao).findPreguntasPorCuestionarioId(anyLong());
+	}
+	
+	
+	@Test
+	void testCuestionarioNoExisteVerificar() {
+		when(cuestionarioDao.findAll()).thenReturn(Datos.EXAMENES); // arumento Collections.emptyList() 
+		when(cuestionarioPreguntaDao.findPreguntasPorCuestionarioId(anyLong())).thenReturn(Datos.PREGUNTAS);
+		Cuestionario cuestionario = cuestionarioService.findCuestionarioPorNombreConPreguntas("Programación2"); // modificado para que falle
+		assertNull(cuestionario);
+		verify(cuestionarioDao).findAll();
+		verify(cuestionarioPreguntaDao).findPreguntasPorCuestionarioId(5L);
 	}
 
 }
