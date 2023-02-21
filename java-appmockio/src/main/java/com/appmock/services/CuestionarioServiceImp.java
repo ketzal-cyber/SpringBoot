@@ -16,16 +16,23 @@ public class CuestionarioServiceImp implements CuestionarioService {
 		this.cuestionarioDao = cuestionarioDao;
 	}
 
-	public Cuestionario findCuestionarioPorNombre(String nombre) {
-		Optional<Cuestionario> cuestionarioOptional = cuestionarioDao.findAll()
+//	public Cuestionario findCuestionarioPorNombre(String nombre) {
+//		Optional<Cuestionario> cuestionarioOptional = cuestionarioDao.findAll()
+//			.stream()
+//			.filter(e -> e.getNombre().contains(nombre))
+//			.findFirst();
+//		Cuestionario examen = null;
+//		if(cuestionarioOptional.isPresent()) {
+//			examen = cuestionarioOptional.orElseThrow();
+//		}
+//		return examen;
+//	}
+	public Optional<Cuestionario> findCuestionarioPorNombre(String nombre) {
+		return cuestionarioDao.findAll()
 			.stream()
 			.filter(e -> e.getNombre().contains(nombre))
 			.findFirst();
-		Cuestionario examen = null;
-		if(cuestionarioOptional.isPresent()) {
-			examen = cuestionarioOptional.orElseThrow();
-		}
-		return examen;
+		
 	}
 
 }
