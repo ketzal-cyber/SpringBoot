@@ -17,7 +17,12 @@ import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.appmock.dao.CuestionarioDAO;
 import com.appmock.dao.CuestionarioDaoImpl;
@@ -26,18 +31,24 @@ import com.appmock.models.Cuestionario;
 
 /* -> *****-*
  * */
-
+//@ExtendWith(MockitoExtension.class) pom mockito-junit-jupiter  42
 public class CuestionarioServiceImplTest {
 	
+	@Mock
 	CuestionarioDAO cuestionarioDao;
-	CuestionarioService cuestionarioService;
+	@Mock
 	CuestionarioPreguntaDAO cuestionarioPreguntaDao;
+	
+	@InjectMocks
+	CuestionarioServiceImp cuestionarioService;
 	
 	@BeforeEach
 	void setUp() {
-		cuestionarioDao = Mockito.mock(CuestionarioDAO.class);
-		cuestionarioPreguntaDao = mock(CuestionarioPreguntaDAO.class);
-		cuestionarioService = new CuestionarioServiceImp(cuestionarioDao,cuestionarioPreguntaDao);
+		MockitoAnnotations.openMocks(this); // abilitar anotacion de mock
+		//camiar por anotaciones de mock
+//		cuestionarioDao = Mockito.mock(CuestionarioDAO.class);
+//		cuestionarioPreguntaDao = mock(CuestionarioPreguntaDAO.class);
+//		cuestionarioService = new CuestionarioServiceImp(cuestionarioDao,cuestionarioPreguntaDao);
 	}
 	
 	@Test
@@ -84,6 +95,7 @@ public class CuestionarioServiceImplTest {
 		Cuestionario cuestionario = cuestionarioService.findCuestionarioPorNombreConPreguntas("Programación");
 		
 		assertEquals(5, cuestionario.getPreguntas().size());
+		assertTrue(cuestionario.getPreguntas().contains("Logica"));
 	}
 	
 	@Test
@@ -106,7 +118,7 @@ public class CuestionarioServiceImplTest {
 		Cuestionario cuestionario = cuestionarioService.findCuestionarioPorNombreConPreguntas("Programación2"); // modificado para que falle
 		assertNull(cuestionario);
 		verify(cuestionarioDao).findAll();
-		verify(cuestionarioPreguntaDao).findPreguntasPorCuestionarioId(5L);
+		verify(cuestionarioPreguntaDao).findPreguntasPorCuestionarioId(anyLong());
 	}
 
 }
