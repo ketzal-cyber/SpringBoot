@@ -52,4 +52,12 @@ public class CuestionarioServiceImp implements CuestionarioService {
 		return cuestionario;
 	}
 
+	@Override
+	public Cuestionario guardar(Cuestionario examen) {
+		if(!examen.getPreguntas().isEmpty()) {
+			cuestionarioPreguntaDao.guardarVarias(examen.getPreguntas());
+		}
+		return cuestionarioDao.guardar(examen);
+	}
+
 }

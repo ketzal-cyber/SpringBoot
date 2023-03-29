@@ -8,4 +8,6 @@ import java.util.List;
 public interface CuestionarioPreguntaDAO {
 
 	List<String> findPreguntasPorCuestionarioId(Long id);
+	
+	void guardarVarias(List<String> preguntas);
 }

@@ -13,5 +13,7 @@ public interface CuestionarioService {
 	Optional<Cuestionario> findCuestionarioPorNombre(String nombre);
 	
 	Cuestionario findCuestionarioPorNombreConPreguntas(String nombre);
+	
+	Cuestionario guardar(Cuestionario examen);
 
 }

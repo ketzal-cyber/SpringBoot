@@ -21,4 +21,10 @@ public class CuestionarioDaoImpl implements CuestionarioDAO {
 //							new Cuestionario(7L, "Matematicas Discretas"));
 	}
 
+	@Override
+	public Cuestionario guardar(Cuestionario cuestionario) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }

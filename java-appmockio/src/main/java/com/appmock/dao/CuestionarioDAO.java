@@ -11,5 +11,7 @@ import com.appmock.models.Cuestionario;
 public interface CuestionarioDAO {
 	
 	List<Cuestionario> findAll();
+	
+	Cuestionario guardar(Cuestionario cuestionario);
 
 }

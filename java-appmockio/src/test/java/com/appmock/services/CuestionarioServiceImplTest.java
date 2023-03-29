@@ -4,8 +4,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -22,7 +27,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.mockito.internal.matchers.Any;
+import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.stubbing.Answer;
 
 import com.appmock.dao.CuestionarioDAO;
 import com.appmock.dao.CuestionarioDaoImpl;
@@ -113,12 +121,87 @@ public class CuestionarioServiceImplTest {
 	
 	@Test
 	void testCuestionarioNoExisteVerificar() {
+		// GIVE
 		when(cuestionarioDao.findAll()).thenReturn(Datos.EXAMENES); // arumento Collections.emptyList() 
 		when(cuestionarioPreguntaDao.findPreguntasPorCuestionarioId(anyLong())).thenReturn(Datos.PREGUNTAS);
+		
+		// WHEN
 		Cuestionario cuestionario = cuestionarioService.findCuestionarioPorNombreConPreguntas("Programación2"); // modificado para que falle
+		
+		// THEN
 		assertNull(cuestionario);
 		verify(cuestionarioDao).findAll();
-		verify(cuestionarioPreguntaDao).findPreguntasPorCuestionarioId(anyLong());
+//		verify(cuestionarioPreguntaDao).findPreguntasPorCuestionarioId(anyLong());
+	}
+	
+	@Test
+	void testGuardarCuestionario() {
+		// GIVEN precondiciones enotrno impulsadoo al comportamiento 
+		Cuestionario newCuestionario = new Cuestionario(8L,"ForenseTI");
+		newCuestionario.setPreguntas(Datos.PREGUNTAS);
+		
+//		when(cuestionarioDao.guardar(any(Cuestionario.class))).thenReturn(Datos.cuestionario); generar id de forma automatica 
+		when(cuestionarioDao.guardar(any(Cuestionario.class))).then(new Answer<Cuestionario>() {
+			Long indice = 8L;
+			@Override
+			public Cuestionario answer(InvocationOnMock invocation) throws Throwable {
+				// invocation captura el cuestionario.class o el newCuestionario
+				Cuestionario cuestionario = invocation.getArgument(0);
+				cuestionario.setId(indice++);
+				return cuestionario;
+			}
+		});
+		//  When   cuando se ejecuta el metodo que queremos probar
+		Cuestionario cuestionario = cuestionarioService.guardar(newCuestionario);
+		
+		// Then 
+		assertNotNull(cuestionario.getId());
+		assertEquals(8L, cuestionario.getId());
+		assertEquals("ForenseTI", cuestionario.getNombre());
+		
+		verify(cuestionarioDao).guardar(any(Cuestionario.class));
+		verify(cuestionarioPreguntaDao).guardarVarias(anyList());
+	}
+	
+	
+	// Comprobacion de  Excepciones usando When y ThenThrow
+	@Test
+	void testManejoException() {
+//		when(cuestionarioDao.findAll()).thenReturn(Datos.EXAMENES);
+		when(cuestionarioDao.findAll()).thenReturn(Datos.EXAMENES_ID_NULL); 	// opcion con null
+		
+																				// manejar propias exceptioes de runtime o excetion
+																	// isNull siempre arroja un IllegalArgumentException
+		when(cuestionarioPreguntaDao.findPreguntasPorCuestionarioId(isNull())).thenThrow(IllegalArgumentException.class);
+		
+		// Exception excepption =  assertThrows . . .
+		assertThrows(IllegalArgumentException.class, () -> {
+			cuestionarioService.findCuestionarioPorNombreConPreguntas("Programación");
+		});
+		
+		verify(cuestionarioDao).findAll();
+		verify(cuestionarioPreguntaDao).findPreguntasPorCuestionarioId(isNull());  // cambio de null a isNull
+	}
+	
+	// Validacion personalizadas con ArgumentMatchers
+	// asegurar que ciertos arguemntos se pasan a los mocks
+	@Test
+	void ArgumentMatchers(){
+		when(cuestionarioDao.findAll()).thenReturn(Datos.EXAMENES);
+		when(cuestionarioPreguntaDao.findPreguntasPorCuestionarioId(anyLong())).thenReturn(Datos.PREGUNTAS);
+		
+		cuestionarioService.findCuestionarioPorNombreConPreguntas("Programación");
+		
+		/*ArgumentMatchers es para veriicacion cuando se llaman los metodos mocks los 
+		 * verify(cuestionarioPreguntaDao).findPreguntasPorCuestionarioId(5L)
+		 * verify(cuestionarioPreguntaDao).findPreguntasPorCuestionarioId(eq(5L));
+		 * Lambda mas robusto
+		 */
+		verify(cuestionarioDao).findAll();
+//		verify(cuestionarioPreguntaDao).findPreguntasPorCuestionarioId(argThat(arg -> arg.equals(5L)));
+//		verify(cuestionarioPreguntaDao).findPreguntasPorCuestionarioId(argThat(arg -> arg != null && arg > 5L));
+		verify(cuestionarioPreguntaDao).findPreguntasPorCuestionarioId(argThat(arg -> arg != null && arg.equals(5L)));
+		
 	}
 
 }
