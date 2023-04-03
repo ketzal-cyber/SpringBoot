@@ -11,7 +11,12 @@ import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doCallRealMethod;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -23,6 +28,9 @@ import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.ArgumentMatcher;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -35,6 +43,7 @@ import org.mockito.stubbing.Answer;
 import com.appmock.dao.CuestionarioDAO;
 import com.appmock.dao.CuestionarioDaoImpl;
 import com.appmock.dao.CuestionarioPreguntaDAO;
+import com.appmock.dao.CuestionarioPreguntaDaoImpl;
 import com.appmock.models.Cuestionario;
 
 /* -> *****-*
@@ -47,8 +56,16 @@ public class CuestionarioServiceImplTest {
 	@Mock
 	CuestionarioPreguntaDAO cuestionarioPreguntaDao;
 	
+	@Mock
+	CuestionarioDaoImpl cuestionarioDaoImpl;
+	@Mock
+	CuestionarioPreguntaDaoImpl cuestionarioPreguntaDaoImpl;
+	
 	@InjectMocks
 	CuestionarioServiceImp cuestionarioService;
+	
+	@Captor
+	ArgumentCaptor<Long> captor;
 	
 	@BeforeEach
 	void setUp() {
@@ -183,7 +200,7 @@ public class CuestionarioServiceImplTest {
 		verify(cuestionarioPreguntaDao).findPreguntasPorCuestionarioId(isNull());  // cambio de null a isNull
 	}
 	
-	// Validacion personalizadas con ArgumentMatchers
+	// Validacion personalizadas con ArgumentMatchers 45 leccion
 	// asegurar que ciertos arguemntos se pasan a los mocks
 	@Test
 	void ArgumentMatchers(){
@@ -201,7 +218,197 @@ public class CuestionarioServiceImplTest {
 //		verify(cuestionarioPreguntaDao).findPreguntasPorCuestionarioId(argThat(arg -> arg.equals(5L)));
 //		verify(cuestionarioPreguntaDao).findPreguntasPorCuestionarioId(argThat(arg -> arg != null && arg > 5L));
 		verify(cuestionarioPreguntaDao).findPreguntasPorCuestionarioId(argThat(arg -> arg != null && arg.equals(5L)));
-		
 	}
+	
+	
+	// leccion47 Argument matchers part2
+	
+	@Test
+	void ArgumentMatchers2(){
+		when(cuestionarioDao.findAll()).thenReturn(Datos.EXAMENES); 	// EXAMENES_ID_NEGATIVOS 
+		when(cuestionarioPreguntaDao.findPreguntasPorCuestionarioId(anyLong())).thenReturn(Datos.PREGUNTAS);
+		
+		cuestionarioService.findCuestionarioPorNombreConPreguntas("Programación");
+		
+		verify(cuestionarioDao).findAll();
+//		
+		verify(cuestionarioPreguntaDao).findPreguntasPorCuestionarioId(argThat(new OurArgumentMatchers()));
+	}
+	
+	@Test
+	void ArgumentMatchers3(){
+		when(cuestionarioDao.findAll()).thenReturn(Datos.EXAMENES); 	// EXAMENES_ID_NEGATIVOS 
+		when(cuestionarioPreguntaDao.findPreguntasPorCuestionarioId(anyLong())).thenReturn(Datos.PREGUNTAS);
+		
+		cuestionarioService.findCuestionarioPorNombreConPreguntas("Programación");
+		
+		verify(cuestionarioDao).findAll();
+		// con exprecion labda		 sin poder implement el metod toString
+		verify(cuestionarioPreguntaDao).findPreguntasPorCuestionarioId(argThat((argument) -> argument != null && argument > 0));
+	}
+	
+	//implementar ArgMatch con una clase separada o anonima igual puede ser  una inner class
+	public static class OurArgumentMatchers implements ArgumentMatcher<Long>{
+		
+		private Long argument;
+
+		@Override
+		public boolean matches(Long argument) {
+			// Acemos algo como una validacion 
+			// sea positivo y no sea null
+			this.argument = argument;
+			return argument != null && argument > 0;
+		}
+
+		//ventaja de utilizar este metodo de clase es personalizar el mensaje de error
+		// para ocupar el argumento debe ser un propiedad
+		@Override
+		public String toString() {
+			return "ArgumentMatchers mensaje personalizado "
+					+ " donde argument "+ argument +" sea mayor a 0 y no sea null";
+		}
+	}
+	
+	/*
+	 * Capturar los argumentos yy probarlos 
+	 * ArgumentCaptor
+	 **/
+	@Test
+	void testAgumentCaptor() {
+		when(cuestionarioDao.findAll()).thenReturn(Datos.EXAMENES);
+		//when(cuestionarioPreguntaDao.findPreguntasPorCuestionarioId(anyLong())).thenReturn(Datos.PREGUNTAS);
+		
+		cuestionarioService.findCuestionarioPorNombreConPreguntas("Programación");
+		
+		//ArgumentCaptor<Long> captor = ArgumentCaptor.forClass(Long.class);   // usando anotacion en propiedades
+		// @Captor  propiedad ArgumentCaptor<Long> captor;
+		verify(cuestionarioPreguntaDao).findPreguntasPorCuestionarioId(captor.capture());
+		
+		assertEquals(5L, captor.getValue());
+	}
+	
+	/*
+	 * Usando do... Throw Answer return
+	 */
+	@Test
+	void testDoThrow() {
+		Cuestionario cuestionario = Datos.cuestionario;
+		cuestionario.setPreguntas(Datos.PREGUNTAS);
+		doThrow(IllegalArgumentException.class).when(cuestionarioPreguntaDao).guardarVarias(anyList());
+		
+		assertThrows(IllegalArgumentException.class, () -> {
+			cuestionarioService.guardar(cuestionario);
+		});
+	}
+	
+	// doAnswer
+	@Test
+	void testDoAnswer() {
+		when(cuestionarioDao.findAll()).thenReturn(Datos.EXAMENES);
+		//when(cuestionarioPreguntaDao.findPreguntasPorCuestionarioId(anyLong())).thenReturn(Datos.PREGUNTAS);  // hacer con doAnswer()
+		doAnswer(invocacion -> {
+			Long id = invocacion.getArgument(0);
+			return id == 5l? Datos.PREGUNTAS: Collections.emptyList();		// null a collection
+		}).when(cuestionarioPreguntaDao).findPreguntasPorCuestionarioId(anyLong());
+		
+		Cuestionario cuestionario = cuestionarioService.findCuestionarioPorNombreConPreguntas("Programación");
+		
+		assertEquals(5, cuestionario.getPreguntas().size());
+		assertTrue(cuestionario.getPreguntas().contains("JAVA"));
+		assertEquals(5L, cuestionario.getId());
+		assertEquals("Programación", cuestionario.getNombre());
+		
+		verify(cuestionarioPreguntaDao).findPreguntasPorCuestionarioId(anyLong());
+	}
+	
+	//hacer de otra forma guardarCuestionario
+	@Test
+	void testGuardarCuestionariooWithDoAnswer() {
+		// GIVEN precondiciones enotrno impulsadoo al comportamiento 
+		Cuestionario newCuestionario = new Cuestionario(8L,"ForenseTI");
+		newCuestionario.setPreguntas(Datos.PREGUNTAS);
+		
+//		when(cuestionarioDao.guardar(any(Cuestionario.class))).thenReturn(Datos.cuestionario); generar id de forma automatica 
+//		when(cuestionarioDao.guardar(any(Cuestionario.class))).then(new Answer<Cuestionario>() {
+//			Long indice = 8L;
+//			@Override
+//			public Cuestionario answer(InvocationOnMock invocation) throws Throwable {
+//				// invocation captura el cuestionario.class o el newCuestionario
+//				Cuestionario cuestionario = invocation.getArgument(0);
+//				cuestionario.setId(indice++);
+//				return cuestionario;
+//			}
+//		});
+		// implementar otra forma de haccerlo
+		doAnswer(new Answer<Cuestionario>() {
+			Long indice = 8L;
+			@Override
+			public Cuestionario answer(InvocationOnMock invocation) throws Throwable {
+				Cuestionario cuestionario = invocation.getArgument(0);
+				cuestionario.setId(indice++);
+				return cuestionario;
+			}
+		}).when(cuestionarioDao).guardar(any(Cuestionario.class));
+		
+		//  When   cuando se ejecuta el metodo que queremos probar
+		Cuestionario cuestionario = cuestionarioService.guardar(newCuestionario);
+		
+		// Then 
+		assertNotNull(cuestionario.getId());
+		assertEquals(8L, cuestionario.getId());
+		assertEquals("ForenseTI", cuestionario.getNombre());
+		
+		verify(cuestionarioDao).guardar(any(Cuestionario.class));
+		verify(cuestionarioPreguntaDao).guardarVarias(anyList());
+	}
+	
+	// llamar al metodo real  no llamar al metodo simulado  doCallRealMethod
+	@Test
+	void testDoCallRealMethod() {
+		//cuestionarioDaoImpl
+		//cuestionarioPreguntaDaoImpl
+		
+		when(cuestionarioDao.findAll()).thenReturn(Datos.EXAMENES);
+		//when(cuestionarioPreguntaDao.findPreguntasPorCuestionarioId(anyLong())).thenReturn(Datos.PREGUNTAS);
+		
+		//llamar al metodo real
+		doCallRealMethod().when(cuestionarioPreguntaDaoImpl).findPreguntasPorCuestionarioId(anyLong());
+		
+		Cuestionario cuestionario = cuestionarioService.findCuestionarioPorNombreConPreguntas("Programación");
+		assertEquals(5L, cuestionario.getId());
+		assertEquals("Programación", cuestionario.getNombre());
+	}
+	
+	/*
+	 * Uso de los SPY y DoReturn
+	 * spy es un hibrido un objeto mock y un real
+	 * invocar sin definir ningun when, un simulacro
+	 * 		sin mockear un metodo del spy
+	 * cuando se invoca sera al metodo real
+	 * no se tiene el control real de los metodos reales
+	 */
+	@Test
+	void testSpy() {
+		CuestionarioDAO cuestionarioDao = spy(CuestionarioDaoImpl.class);
+		CuestionarioPreguntaDAO cuestionarioPreguntaDao = spy(CuestionarioPreguntaDaoImpl.class);
+		CuestionarioService cuestionarioServie = new CuestionarioServiceImp(cuestionarioDao, cuestionarioPreguntaDao);
+		
+		//when llamando al metodo real imprimiendo los sout de los metodos para evitar eso usamos doReturn
+		List<String> preguntas = Arrays.asList("aritmética");
+//		when(cuestionarioPreguntaDao.findPreguntasPorCuestionarioId(anyLong())).thenReturn(preguntas); cambiando por doReturn
+		doReturn(preguntas).when(cuestionarioPreguntaDao).findPreguntasPorCuestionarioId(anyLong());
+		
+		Cuestionario cuestionario = cuestionarioServie.findCuestionarioPorNombreConPreguntas("Programación");
+		
+		assertEquals(5, cuestionario.getId());
+		assertEquals("Programación", cuestionario.getNombre());
+		assertEquals(1, cuestionario.getPreguntas().size());
+		assertTrue(cuestionario.getPreguntas().contains("aritmética"));
+		
+		verify(cuestionarioDao).findAll();
+		verify(cuestionarioPreguntaDao).findPreguntasPorCuestionarioId(anyLong());
+			
+	}
+	
 
 }

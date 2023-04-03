@@ -19,5 +19,10 @@ public class Datos {
 												"Python", "Logica");
 //	public static final Cuestionario cuestionario = new Cuestionario(8L, "ForenseTI");
 	public static final Cuestionario cuestionario = new Cuestionario(null, "ForenseTI");
+	
+	
+	public static final List<Cuestionario> EXAMENES_ID_NEGATIVOS = Arrays.asList(new Cuestionario(-5L,"Programación"),
+			new Cuestionario(-6L, "Analisis Sistemas"),
+			new Cuestionario(null, "Matematicas Discretas"));
 
 }
