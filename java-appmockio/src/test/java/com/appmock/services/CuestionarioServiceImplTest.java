@@ -11,13 +11,20 @@ import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.atMost;
+import static org.mockito.Mockito.atMostOnce;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
@@ -445,5 +452,46 @@ public class CuestionarioServiceImplTest {
 		inOrder.verify(cuestionarioPreguntaDao).findPreguntasPorCuestionarioId(6L);
 	}
 	
+	/*
+	 * Verificar el número de invocaciones de los mocks
+	 */
+	@Test
+	void testNumeroInvocaciones() {
+		when(cuestionarioDao.findAll()).thenReturn(Datos.EXAMENES);
+		cuestionarioService.findCuestionarioPorNombreConPreguntas("Programación");
+		
+		verify(cuestionarioPreguntaDao).findPreguntasPorCuestionarioId(5L);   // por defecto se ejecuta 1 sola ves findPreguntasPorCuestionarioId
+		verify(cuestionarioPreguntaDao, times(1)).findPreguntasPorCuestionarioId(5L); // con 2 no pasa xq solo se invoca 1 ves
+		verify(cuestionarioPreguntaDao, atLeast(1)).findPreguntasPorCuestionarioId(5L);   // al menos que se ejecute 1 sola ves o como minimo 1
+		verify(cuestionarioPreguntaDao, atLeastOnce()).findPreguntasPorCuestionarioId(5L);   // alo menos 1 ves equivalente a atleast(1)
+		verify(cuestionarioPreguntaDao, atMost(5)).findPreguntasPorCuestionarioId(5L);   // al maximo se ejecutara tentas veces
+		verify(cuestionarioPreguntaDao, atMostOnce()).findPreguntasPorCuestionarioId(5L);   // equivalente a atMost(1)
+	}
+	
+	@Test
+	void testNumeroInvocaciones2() {
+		when(cuestionarioDao.findAll()).thenReturn(Datos.EXAMENES);
+		cuestionarioService.findCuestionarioPorNombreConPreguntas("Programación");
+		
+		// si se ejecutara dos veces el metodo findPreguntasPorCuestionarioId
+//		verify(cuestionarioPreguntaDao, times(2)).findPreguntasPorCuestionarioId(5L); 
+//		verify(cuestionarioPreguntaDao, atLeast(2)).findPreguntasPorCuestionarioId(5L);  
+//		verify(cuestionarioPreguntaDao, atLeastOnce()).findPreguntasPorCuestionarioId(5L); 
+//		verify(cuestionarioPreguntaDao, atMost(20)).findPreguntasPorCuestionarioId(5L); 
+	}
+	
+	
+	@Test
+	void testNumeroInvocaciones3() {
+		when(cuestionarioDao.findAll()).thenReturn(Collections.emptyList());
+		cuestionarioService.findCuestionarioPorNombreConPreguntas("Programación");
+		
+		// nunca se invoca
+		verify(cuestionarioPreguntaDao, never()).findPreguntasPorCuestionarioId(5L);
+		verifyNoInteractions(cuestionarioPreguntaDao);
+		
+		verify(cuestionarioDao).findAll();
+		 
+	}
 
 }
