@@ -412,17 +412,37 @@ public class CuestionarioServiceImplTest {
 	
 	
 	
-	/* Otra caracteristica de Mock
+	/* Otra caracteristica de Mock 
 	 * Verificar el orden en el cual se eecutan los metodos mock
 	 */
 	@Test
 	void testOrdenDeInvocacion() {
+		
 		when(cuestionarioDao.findAll()).thenReturn(Datos.EXAMENES);
 		
 		cuestionarioService.findCuestionarioPorNombreConPreguntas("Programación");
 		cuestionarioService.findCuestionarioPorNombreConPreguntas("Analisis Sistemas");
 		
-		InOrder inOrder = Mockito.inOrder();
+		InOrder inOrder = Mockito.inOrder(cuestionarioPreguntaDao);
+		inOrder.verify(cuestionarioPreguntaDao).findPreguntasPorCuestionarioId(5L);
+		inOrder.verify(cuestionarioPreguntaDao).findPreguntasPorCuestionarioId(6L);
+	}
+	
+	// veriicar multiplas mocks
+	@Test
+	void testOrdenDeInvocacion2() {
+		
+		when(cuestionarioDao.findAll()).thenReturn(Datos.EXAMENES);
+		
+		cuestionarioService.findCuestionarioPorNombreConPreguntas("Programación");
+		cuestionarioService.findCuestionarioPorNombreConPreguntas("Analisis Sistemas");
+		
+		InOrder inOrder = Mockito.inOrder(cuestionarioDao, cuestionarioPreguntaDao);
+		inOrder.verify(cuestionarioDao).findAll();
+		inOrder.verify(cuestionarioPreguntaDao).findPreguntasPorCuestionarioId(5L);
+		
+		inOrder.verify(cuestionarioDao).findAll();
+		inOrder.verify(cuestionarioPreguntaDao).findPreguntasPorCuestionarioId(6L);
 	}
 	
 
