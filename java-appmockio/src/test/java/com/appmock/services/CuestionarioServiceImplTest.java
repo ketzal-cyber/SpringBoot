@@ -31,6 +31,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatcher;
 import org.mockito.Captor;
+import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -403,11 +404,25 @@ public class CuestionarioServiceImplTest {
 		assertEquals(5, cuestionario.getId());
 		assertEquals("Programación", cuestionario.getNombre());
 		assertEquals(1, cuestionario.getPreguntas().size());
-		assertTrue(cuestionario.getPreguntas().contains("aritmética"));
+		assertTrue(cuestionario.getPreguntas().contains("aritmética"));  //llamando al pregntas localdel metodo
 		
 		verify(cuestionarioDao).findAll();
 		verify(cuestionarioPreguntaDao).findPreguntasPorCuestionarioId(anyLong());
-			
+	}
+	
+	
+	
+	/* Otra caracteristica de Mock
+	 * Verificar el orden en el cual se eecutan los metodos mock
+	 */
+	@Test
+	void testOrdenDeInvocacion() {
+		when(cuestionarioDao.findAll()).thenReturn(Datos.EXAMENES);
+		
+		cuestionarioService.findCuestionarioPorNombreConPreguntas("Programación");
+		cuestionarioService.findCuestionarioPorNombreConPreguntas("Analisis Sistemas");
+		
+		InOrder inOrder = Mockito.inOrder();
 	}
 	
 
