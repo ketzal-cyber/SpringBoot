@@ -2,11 +2,14 @@ package com.appjava.testspring.app.services;
 
 import java.math.BigDecimal;
 
+import org.springframework.stereotype.Service;
+
 import com.appjava.testspring.app.models.Banco;
 import com.appjava.testspring.app.models.Cuenta;
 import com.appjava.testspring.app.repositories.BancoRepository;
 import com.appjava.testspring.app.repositories.CuentaRepository;
 
+@Service
 public class CuentaServiceImpl implements CuentaService {
 	
 	private CuentaRepository cuentaRepository;

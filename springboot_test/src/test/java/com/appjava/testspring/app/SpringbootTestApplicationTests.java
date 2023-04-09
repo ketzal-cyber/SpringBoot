@@ -10,7 +10,11 @@ import java.math.BigDecimal;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 
 import com.appjava.testspring.app.exceptions.DineroInsuficienteException;
 import com.appjava.testspring.app.models.Banco;
@@ -23,16 +27,24 @@ import com.appjava.testspring.app.services.CuentaServiceImpl;
 @SpringBootTest
 class SpringbootTestApplicationTests {
 	
+	@MockBean 	// @Mock aotaciones de frameork spring boot
 	CuentaRepository cuentaRepository;
+	@MockBean 	// @Mock
 	BancoRepository bancoRepository;
 	
-	CuentaService service;
+	/*
+	 * con spring se puede usar la interaz 
+	 * internamente escanea la implementacion
+	 */
+	@Autowired // @InjectMocks
+	CuentaServiceImpl service;
 	
 	@BeforeEach
 	void setUp() {
-		cuentaRepository = mock(CuentaRepository.class);
-		bancoRepository = mock(BancoRepository.class);
-		service = new CuentaServiceImpl(cuentaRepository, bancoRepository);
+//		cuentaRepository = mock(CuentaRepository.class);
+//		bancoRepository = mock(BancoRepository.class);
+//		service = new CuentaServiceImpl(cuentaRepository, bancoRepository);
+		
 		// metodo para reiniciar los valores
 //		Datos.CUENTA_001.setSaldo(new BigDecimal("1000"));
 //		Datos.CUENTA_002.setSaldo(new BigDecimal("2000"));
@@ -126,5 +138,13 @@ class SpringbootTestApplicationTests {
 		
 		verify(cuentaRepository, times(2)).findById(1L);
 	}
+	
+	/*
+	 * Para quitar los log de spring en los test
+	 * agregar el archivo  
+	 * application.properties
+	 * logback-test.xml
+	 * en el directorio  resources
+	 */
 
 }
